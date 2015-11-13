@@ -496,6 +496,9 @@ zfs_unlinked_drain(zfs_sb_t *zsb)
 	dmu_object_info_t doi;
 	znode_t		*zp;
 	int		error;
+	uint64_t	entries = 0;
+
+	printk(KERN_NOTICE "ZFS: unlinked drain started.\n");
 
 	/*
 	 * Iterate over the contents of the unlinked set.
@@ -531,8 +534,16 @@ zfs_unlinked_drain(zfs_sb_t *zsb)
 
 		zp->z_unlinked = B_TRUE;
 		iput(ZTOI(zp));
+
+		entries++;
+		if (entries % 100 == 0)
+			printk(KERN_NOTICE
+			    "ZFS: unlinked drain progress (%llu)\n", entries);
 	}
 	zap_cursor_fini(&zc);
+
+	printk(KERN_NOTICE
+	    "ZFS: unlinked drain completed (%llu).\n", entries);
 }
 
 /*
